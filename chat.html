@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Admin</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    /* Dùng lại CSS như trên */
+    #chat-body {
+      height: 220px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px 10px 0 0;
+      margin-bottom: 0;
+      padding: 12px;
+      background: #f8f9fa;
+      font-size: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    #chat-form {
+      display: flex;
+      gap: 8px;
+      border: 1px solid #e0e0e0;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      background: #fff;
+      padding: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    #chat-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    #chat-input:focus {
+      border: 1.5px solid #007bff;
+    }
+    #chat-form button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    #chat-form button:hover {
+      background: #0056b3;
+    }
+    .chat-message {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    .chat-message.user {
+      justify-content: flex-end;
+    }
+    .chat-message.admin {
+      justify-content: flex-start;
+    }
+    .chat-bubble {
+      max-width: 70%;
+      padding: 8px 14px;
+      border-radius: 18px;
+      font-size: 15px;
+      display: inline-block;
+    }
+    .chat-message.user .chat-bubble {
+      background: #007bff;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .chat-message.admin .chat-bubble {
+      background: #e9ecef;
+      color: #333;
+      border-bottom-left-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-body"></div>
+  <form id="chat-form">
+    <input id="chat-input" autocomplete="off" placeholder="Nhập tin nhắn..." />
+    <button>Gửi</button>
+  </form>
+  <script>
+    const socket = io('http://localhost:3000');
+
+    // Gửi tin nhắn với sender là 'admin'
+    document.getElementById('chat-form').onsubmit = function(e) {
+      e.preventDefault();
+      const msg = document.getElementById('chat-input').value;
+      if (msg.trim() === '') return;
+      socket.emit('chat message', { sender: 'admin', text: msg });
+      document.getElementById('chat-input').value = '';
+    };
+
+    // Nhận và hiển thị tin nhắn
+    socket.on('chat message', function(msg) {
+      const chatBody = document.getElementById('chat-body');
+      const div = document.createElement('div');
+      if (msg.sender === 'user') {
+        div.className = 'chat-message user';
+      } else {
+        div.className = 'chat-message admin';
+      }
+      div.innerHTML = `<div class="chat-bubble">${msg.text}</div>`;
+      chatBody.appendChild(div);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    });
+  </script>
+</body>
+</html>
